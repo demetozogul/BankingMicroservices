@@ -5,6 +5,15 @@ using System.Text.Json;
 using RabbitMQ.Client;
 using Shared;
 
+//RabbitMQ connection
+var factory = new ConnectionFactory(){HostName="localhost"};
+
+using var connection=factory.CreateConnection();
+using var channel = connection.CreateModel();
+
+// ExchangeDeclare
+channel.ExchangeDeclare(exchange: "account.exchange", type: "topic", durable: true);
+
 var accountEvent = new AccountCreatedEvent
 {
     AccountId= Guid.NewGuid().ToString(),
@@ -16,16 +25,6 @@ var accountEvent = new AccountCreatedEvent
 //message turn to json
 var json =JsonSerializer.Serialize(accountEvent);
 var body = Encoding.UTF8.GetBytes(json);
-
-//RabbitMQ connection
-var factory = new ConnectionFactory(){HostName="localhost"};
-
-using var connection=factory.CreateConnection();
-using var channel = connection.CreateModel();
-
-// Exchange Publish
-
-channel.ExchangeDeclare(exchange: "account.exchange", type: "topic", durable: true);
 
 //Message publish
 channel.BasicPublish(
